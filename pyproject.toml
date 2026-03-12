@@ -1,0 +1,117 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "aws-waf-log-analyzer"
+version = "0.1.0"
+description = "High-performance AWS WAF log analyzer with S3 integration and multiple output formats"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Steve", email = "steve@stv.io"}
+]
+maintainers = [
+    {name = "Steve", email = "steve@stv.io"}
+]
+keywords = ["aws", "waf", "logs", "analyzer", "security"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Security",
+    "Topic :: System :: Logging",
+    "Topic :: System :: Monitoring",
+]
+requires-python = ">=3.12"
+dependencies = [
+    "boto3>=1.26.0",
+    "click>=8.1.0",
+    "rich>=13.0.0",
+    "python-dateutil>=2.8.0",
+    "ijson>=3.2.0",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-mock>=3.10.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0.0",
+]
+test = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-mock>=3.10.0",
+    "moto[boto3]>=4.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/stv-io/aws-waf-log-analyzer"
+Documentation = "https://github.com/stv-io/aws-waf-log-analyzer/blob/main/docs/README.md"
+Repository = "https://github.com/stv-io/aws-waf-log-analyzer.git"
+"Bug Tracker" = "https://github.com/stv-io/aws-waf-log-analyzer/issues"
+
+[project.scripts]
+aws-waf-log-analyzer = "aws_waf_log_analyzer.cli:cli"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/tests",
+    "/docs",
+    "/examples",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/aws_waf_log_analyzer"]
+
+[tool.black]
+line-length = 88
+target-version = ['py312']
+include = '\.pyi?$'
+
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "UP", # pyupgrade
+]
+ignore = [
+    "E501",  # line too long, handled by black
+    "B008",  # do not perform function calls in argument defaults
+]
+
+[tool.mypy]
+python_version = "3.12"
+check_untyped_defs = true
+disallow_any_generics = true
+disallow_incomplete_defs = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+]

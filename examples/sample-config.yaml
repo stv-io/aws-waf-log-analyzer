@@ -1,0 +1,34 @@
+# Sample configuration file for AWS WAF Log Analyzer
+# Copy this file and customize it for your environment
+
+# AWS configuration
+aws:
+  region: eu-west-1
+  profile: null  # Set to your AWS profile name if using profiles
+  # bucket: null  # Uncomment to specify a specific bucket
+
+# Logging configuration
+logging:
+  level: INFO  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  # file: null  # Uncomment to log to file instead of console
+
+# Output configuration
+output:
+  default_format: table  # table, csv, json
+  include_statistics: true
+  max_display_rows: 100  # Maximum rows to display in table output
+
+# Performance configuration
+performance:
+  max_workers: 10  # Number of parallel workers for file processing
+
+# Default filters
+filters:
+  default_action: null  # BLOCK, ALLOW, COUNT
+  default_host: null  # Set to your default host to filter
+
+# Advanced settings
+advanced:
+  auto_discover_prefixes: true  # Auto-discover S3 prefixes
+  validate_ssl: true  # SSL certificate validation

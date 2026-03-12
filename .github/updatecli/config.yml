@@ -1,0 +1,166 @@
+# UpdateCLI configuration for automated dependency updates and version management
+
+title: "AWS WAF Log Analyzer Updates"
+
+scms:
+  default:
+    kind: github
+    spec:
+      user: "{{ .github.user }}"
+      email: "{{ .github.email }}"
+      owner: "stv-io"
+      repository: "aws-waf-log-analyzer"
+      token: "{{ requiredEnv .github.token }}"
+      username: "{{ .github.username }}"
+      branch: "main"
+
+actions:
+  default:
+    kind: "github/pullrequest"
+    scmid: "default"
+    spec:
+      title: "[updatecli] Bump {{ .currentVersion }} to {{ .targetVersion }}"
+      description: |
+        🤖 This is an automated update created by [UpdateCLI](https://www.updatecli.io/).
+        
+        ### Changes
+        - Bump version from `{{ .currentVersion }}` to `{{ .targetVersion }}`
+        
+        ### Checklist
+        - [ ] Tests pass
+        - [ ] Documentation updated (if needed)
+        - [ ] Changelog updated (if needed)
+        
+        ---
+        
+        > 💡 This PR will be automatically merged if all checks pass.
+      labels:
+        - "dependencies"
+        - "automated-pr"
+      draft: false
+      maintainer_can_modify: true
+
+# Update Python dependencies
+autodiscovery:
+  actionid: default
+  scmid: default
+  title: "Update Python dependencies"
+  schedules:
+    - "0 6 * * 1"  # Every Monday at 6 AM
+  crawlers:
+    pip:
+      versionfilter:
+        kind: "semver"
+        pattern: "~*"
+      spec:
+        files:
+          - "pyproject.toml"
+        only:
+          packages: true
+
+# Update Docker base image
+actions:
+  update-docker-base:
+    kind: "github/pullrequest"
+    scmid: "default"
+    spec:
+      title: "[updatecli] Update Docker base image"
+      description: |
+        🤖 Automated Docker base image update.
+        
+        ### Changes
+        - Update astral/uv:python3.13-trixie to latest version
+      labels:
+        - "dependencies"
+        - "docker"
+        - "automated-pr"
+
+sources:
+  docker-base-image:
+    kind: "dockerimage"
+    name: "Get latest astral/uv:python3.13-trixie image"
+    spec:
+      image: "astral/uv:python3.13-trixie"
+      versionfilter:
+        kind: "semver"
+        pattern: "latest"
+
+targets:
+  update-dockerfile:
+    name: "Update Dockerfile base image"
+    kind: "dockerfile"
+    scmid: "default"
+    spec:
+      file: "Dockerfile"
+      instruction:
+        keyword: "FROM"
+        matcher: "astral/uv:python3.13-trixie"
+      sourceid: "docker-base-image"
+
+# Version management
+sources:
+  current-version:
+    kind: "file"
+    name: "Get current version"
+    spec:
+      file: "src/aws_waf_log_analyzer/__init__.py"
+      matchpattern: "__version__ = \"(.*)\""
+
+  next-version:
+    kind: "shell"
+    name: "Calculate next version"
+    dependson:
+      - "current-version"
+    spec:
+      command: "python3 -c \"import sys; current = '{{ source.current-version }}'; parts = current.split('.'); parts[-1] = str(int(parts[-1]) + 1); print('.'.join(parts))\""
+
+targets:
+  update-version:
+    name: "Update version in __init__.py"
+    kind: "file"
+    scmid: "default"
+    sourceid: "next-version"
+    spec:
+      file: "src/aws_waf_log_analyzer/__init__.py"
+      matchpattern: "__version__ = \".*\""
+      replacepattern: "__version__ = \"{{ source.next-version }}\""
+
+  update-pyproject-version:
+    name: "Update version in pyproject.toml"
+    kind: "toml"
+    scmid: "default"
+    sourceid: "next-version"
+    spec:
+      file: "pyproject.toml"
+      key: "project.version"
+
+# GitHub Actions dependencies
+sources:
+  github-actions:
+    kind: "githubrelease"
+    name: "Get latest GitHub Actions versions"
+    spec:
+      owner: "actions"
+      token: "{{ requiredEnv .github.token }}"
+      versionfilter:
+        kind: "semver"
+        pattern: "v*"
+      repositories:
+        - "checkout"
+        - "setup-python"
+        - "setup-buildx-action"
+        - "build-push-action"
+        - "login-action"
+        - "metadata-action"
+
+targets:
+  update-github-actions:
+    name: "Update GitHub Actions in workflows"
+    kind: "yaml"
+    scmid: "default"
+    sourceid: "github-actions"
+    spec:
+      files:
+        - ".github/workflows/*.yml"
+      key: "$.uses"
+      value: "actions/{{ source.github-actions.name }}@{{ source.github-actions.version }}"

@@ -1,0 +1,93 @@
+name: Test Suite
+
+on:
+  push:
+    branches: [ main, initial, develop ]
+  pull_request:
+    branches: [ main, initial ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.13"]
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        version: "latest"
+    
+    - name: Install dependencies
+      run: |
+        uv pip install --system -e ".[test]"
+    
+    - name: Run linting
+      run: |
+        uv pip install --system black ruff mypy
+        black --check src tests
+        ruff check src tests
+        mypy src
+    
+    - name: Run tests
+      run: |
+        pytest --cov=src/aws_waf_log_analyzer --cov-report=xml --cov-report=html
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+    
+    - name: Archive test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: test-results-${{ matrix.python-version }}
+        path: |
+          htmlcov/
+          coverage.xml
+
+  integration-test:
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.13"
+    
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+    
+    - name: Install package
+      run: |
+        uv pip install --system -e .
+    
+    - name: Test CLI installation
+      run: |
+        aws-waf-log-analyzer --version
+        aws-waf-log-analyzer --help
+    
+    - name: Test config commands
+      run: |
+        aws-waf-log-analyzer config init --output test-config.yaml
+        aws-waf-log-analyzer config validate test-config.yaml
+        rm test-config.yaml
+    
+    - name: Test Docker build
+      run: |
+        docker build -t aws-waf-log-analyzer:test .
+        docker run --rm aws-waf-log-analyzer:test --version
