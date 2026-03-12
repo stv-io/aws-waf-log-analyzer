@@ -41,7 +41,8 @@ jobs:
     - name: Test Docker image
       run: |
         # Use the first tag from metadata
-        IMAGE_TAG=$(echo '${{ steps.meta.outputs.tags }}' | head -n1)
+        IMAGE_TAG="${{ steps.meta.outputs.tags }}"
+        echo "Using image tag: $IMAGE_TAG"
         docker run --rm $IMAGE_TAG analyze --version
         docker run --rm $IMAGE_TAG analyze --help
     
@@ -51,7 +52,7 @@ jobs:
         echo 'aws:\n  region: us-east-1\nlogging:\n  level: INFO' > test-config.yaml
         
         # Use the first tag from metadata
-        IMAGE_TAG=$(echo '${{ steps.meta.outputs.tags }}' | head -n1)
+        IMAGE_TAG="${{ steps.meta.outputs.tags }}"
         
         # Test config commands
         docker run --rm -v $(pwd)/test-config.yaml:/app/test-config.yaml $IMAGE_TAG config init --output /app/test-init-config.yaml
