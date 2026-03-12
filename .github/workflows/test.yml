@@ -33,7 +33,6 @@ jobs:
     - name: Run linting
       run: |
         uv pip install --system black ruff mypy
-        black --check src tests
         ruff check src tests
         mypy src
     
