@@ -41,8 +41,8 @@ jobs:
     
     - name: Test Docker image
       run: |
-        docker run --rm test-image --version
-        docker run --rm test-image --help
+        docker run --rm test-image analyze --version
+        docker run --rm test-image analyze --help
     
     - name: Test Docker functionality
       run: |
