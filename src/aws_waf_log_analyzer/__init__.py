@@ -14,6 +14,6 @@ from .utils import parse_time_range, setup_logging
 
 __all__ = [
     "WAFLogAnalyzer",
-    "parse_time_range", 
+    "parse_time_range",
     "setup_logging",
 ]
