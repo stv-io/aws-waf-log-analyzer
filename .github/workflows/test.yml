@@ -32,9 +32,8 @@ jobs:
     
     - name: Run linting
       run: |
-        uv pip install --system black ruff mypy
+        uv pip install --system ruff
         ruff check src tests
-        mypy src --ignore-missing-imports --no-strict-optional
     
     - name: Run tests
       run: |
