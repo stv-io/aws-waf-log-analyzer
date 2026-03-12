@@ -50,7 +50,7 @@ jobs:
     - name: Test Docker functionality
       run: |
         # Create a test config
-        echo 'aws:\n  region: us-east-1\nlogging:\n  level: INFO' > test-config.yaml
+        printf "aws:\n  region: us-east-1\nlogging:\n  level: INFO\n" > test-config.yaml
         
         # Use the first tag from metadata
         IMAGE_TAG=$(echo '${{ steps.meta.outputs.tags }}' | head -n1)
