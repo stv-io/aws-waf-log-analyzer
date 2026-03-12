@@ -79,7 +79,7 @@ line-length = 88
 target-version = ['py312']
 include = '\.pyi?$'
 
-[tool.ruff]
+[tool.ruff.lint]
 target-version = "py312"
 line-length = 88
 select = [

@@ -37,21 +37,25 @@ jobs:
         labels: ${{ steps.meta.outputs.labels }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
-        outputs: type=docker,name=test-image
     
     - name: Test Docker image
       run: |
-        docker run --rm test-image analyze --version
-        docker run --rm test-image analyze --help
+        # Use the first tag from metadata
+        IMAGE_TAG=$(echo '${{ steps.meta.outputs.tags }}' | head -n1)
+        docker run --rm $IMAGE_TAG analyze --version
+        docker run --rm $IMAGE_TAG analyze --help
     
     - name: Test Docker functionality
       run: |
         # Create a test config
         echo 'aws:\n  region: us-east-1\nlogging:\n  level: INFO' > test-config.yaml
         
+        # Use the first tag from metadata
+        IMAGE_TAG=$(echo '${{ steps.meta.outputs.tags }}' | head -n1)
+        
         # Test config commands
-        docker run --rm -v $(pwd)/test-config.yaml:/app/test-config.yaml test-image config init --output /app/test-init-config.yaml
-        docker run --rm -v $(pwd)/test-config.yaml:/app/test-config.yaml test-image config validate /app/test-config.yaml
+        docker run --rm -v $(pwd)/test-config.yaml:/app/test-config.yaml $IMAGE_TAG config init --output /app/test-init-config.yaml
+        docker run --rm -v $(pwd)/test-config.yaml:/app/test-config.yaml $IMAGE_TAG config validate /app/test-config.yaml
         
         # Clean up
         rm test-config.yaml
