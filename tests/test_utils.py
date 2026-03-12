@@ -52,7 +52,6 @@ class TestTimeRangeParsing:
         yesterday_start = (now - timedelta(days=1)).replace(
             hour=0, minute=0, second=0, microsecond=0
         )
-        yesterday_end = yesterday_start + timedelta(days=1)
 
         # Allow for small time differences due to test execution
         assert abs((start_time - yesterday_start).total_seconds()) < 60
@@ -63,9 +62,6 @@ class TestTimeRangeParsing:
         start_time, end_time = parse_time_range("today 09:00-17:00")
 
         now = datetime.now(UTC)
-        expected_start = now.replace(hour=9, minute=0, second=0, microsecond=0)
-        expected_end = now.replace(hour=17, minute=0, second=0, microsecond=0)
-
         assert start_time.hour == 9
         assert end_time.hour == 17
         assert start_time.date() == now.date()

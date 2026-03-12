@@ -153,7 +153,7 @@ def load_config(config_path: str) -> dict[str, Any]:
         except yaml.YAMLError as e:
             raise yaml.YAMLError(
                 f"Invalid YAML in configuration file {config_path}: {e}"
-            )
+            ) from e
 
 
 def get_default_config() -> dict[str, Any]:
