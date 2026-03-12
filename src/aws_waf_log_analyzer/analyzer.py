@@ -421,7 +421,7 @@ class WAFLogAnalyzer:
         """Print processing statistics."""
         stats_panel = Panel(
             f"""[bold blue]Processing Statistics[/bold blue]
-            
+
 Total Files Found: {self.stats['total_files']}
 Files Processed: {self.stats['processed_files']}
 Total Log Entries: {self.stats['total_entries']}
